@@ -105,8 +105,9 @@ public:
     // TODO: Find the optimal dt that satisfies the CFL condition, and return
     // its value
     double dt = 100.0;
+    double c_cfl = 0.4;
     for (int idx = 0; idx < Nx * Ny; idx++) {
-      double dt_trial = 0.45 * std::min(dx, dy) /
+      double dt_trial = c_cfl * std::min(dx, dy) /
                         (std::sqrt(gamma * P[idx] / rho[idx]) +
                          std::sqrt(vx[idx] * vx[idx] + vy[idx] * vy[idx]));
       if (dt_trial < dt)
@@ -253,9 +254,12 @@ public:
 
         // compute x fluxes first
         double c_l = std::sqrt(gamma * P_Lx[idx + 1] / rho_Lx[idx + 1]) +
-                     std::abs(vx_Lx[idx + 1]);
+                     // std::abs(vx_Lx[idx + 1]);
+                     std::sqrt(square(vx_Lx[idx + 1]) + square(vy_Lx[idx + 1]));
         double c_r =
-            std::sqrt(gamma * P_Rx[idx] / rho_Rx[idx]) + std::abs(vx_Rx[idx]);
+            std::sqrt(gamma * P_Rx[idx] / rho_Rx[idx]) +
+            // std::abs(vx_Rx[idx]);
+                     std::sqrt(square(vx_Rx[idx]) + square(vy_Rx[idx]));
         double c = std::max(c_l, c_r);
 
         double en_L = P_Lx[idx + 1] / (gamma - 1.0) +
@@ -293,9 +297,12 @@ public:
 
         // flux in y
         c_r = std::sqrt(gamma * P_Ly[idx + Nx] / rho_Ly[idx + Nx]) +
-                     std::abs(vy_Ly[idx + Nx]);
+                     // std::abs(vy_Ly[idx + Nx]);
+                     std::sqrt(square(vx_Ly[idx + Nx]) + square(vy_Ly[idx + Nx]));
         c_l =
-            std::sqrt(gamma * P_Ry[idx] / rho_Ry[idx]) + std::abs(vy_Ry[idx]);
+            std::sqrt(gamma * P_Ry[idx] / rho_Ry[idx]) +
+            // + std::abs(vy_Ry[idx]);
+                     std::sqrt(square(vx_Ry[idx]) + square(vy_Ry[idx]));
         c = std::max(c_l, c_r);
 
         en_L = P_Ly[idx + Nx] / (gamma - 1.0) +
